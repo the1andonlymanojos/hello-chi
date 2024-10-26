@@ -1,0 +1,180 @@
+definitions:
+  handlers.UploadFileInternalRequest:
+    properties:
+      hash:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      path:
+        type: string
+      size:
+        type: integer
+      uuid:
+        type: string
+    type: object
+  handlers.UploadRequest:
+    properties:
+      hash:
+        type: string
+      name:
+        type: string
+      size:
+        type: integer
+    type: object
+  handlers.UploadResponse:
+    properties:
+      eTag:
+        type: string
+    type: object
+  utils.FileMetaData:
+    description: FileMetaData represents metadata for a file upload.
+    properties:
+      hash:
+        type: string
+      last_byte_received:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: string
+      path:
+        type: string
+      size:
+        type: integer
+      ttl:
+        type: integer
+      upload_date:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /download/{identifier}:
+    get:
+      description: Downloads a file with a valid identifier. The eTag is used to retrieve
+        the file Metadata from the Redis database. As long as the ownerId matches
+        that in the cookie, the file is served.
+      parameters:
+      - description: File identifier (etag)
+        in: path
+        name: identifier
+        required: true
+        type: string
+      responses:
+        "200":
+          description: File downloaded successfully
+          schema:
+            type: string
+        "206":
+          description: Binary data
+          schema:
+            type: string
+        "400":
+          description: Bad request or invalid identifier
+          schema:
+            type: string
+        "500":
+          description: Bad request or invalid identifier
+          schema:
+            type: string
+      summary: Download file
+      tags:
+      - Files
+  /upload/{identifier}:
+    put:
+      description: Uploads a file chunk with a valid identifier and content range
+      parameters:
+      - description: File identifier (etag)
+        in: path
+        name: identifier
+        required: true
+        type: string
+      - description: Content-Range of the chunk (e.g., bytes 0-100/500)
+        in: header
+        name: Content-Range
+        required: true
+        type: string
+      responses:
+        "206":
+          description: Chunk uploaded successfully
+          schema:
+            type: string
+        "400":
+          description: Bad request or invalid chunk range
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+        "999":
+          description: FileMetaData
+          schema:
+            $ref: '#/definitions/utils.FileMetaData'
+      summary: Upload file chunk
+      tags:
+      - Files
+  /upload/initiate:
+    post:
+      consumes:
+      - application/json
+      description: Initiates the upload process by creating metadata and returning
+        an identifier
+      parameters:
+      - description: File upload request
+        in: body
+        name: uploadReq
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: eTag identifier for the file upload
+          schema:
+            $ref: '#/definitions/handlers.UploadResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Initiate file upload
+      tags:
+      - Files
+  /upload/internal:
+    post:
+      consumes:
+      - application/json
+      description: Used by file conversion services to upload files internally
+      parameters:
+      - description: File upload request
+        in: body
+        name: uploadReq
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UploadFileInternalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: File uploaded successfully
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Upload file internally
+      tags:
+      - Internal API
+swagger: "2.0"
