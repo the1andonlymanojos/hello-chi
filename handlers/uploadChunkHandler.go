@@ -51,12 +51,19 @@ func UploadChunkHandlerClosure(rdb *redis.Client) http.HandlerFunc {
 		// get the range
 		var start, end int64
 		if contentRange != "" {
+			println(contentRange)
 			parts := strings.Split(contentRange, " ")
 			if len(parts) == 2 {
 				rangeParts := strings.Split(parts[1], "-")
 				if len(rangeParts) == 2 {
 					start, _ = strconv.ParseInt(rangeParts[0], 10, 64)
-					end, _ = strconv.ParseInt(rangeParts[1], 10, 64)
+					if strings.Contains(rangeParts[1], "/") {
+						newRangeParts := strings.Split(rangeParts[1], "/")
+						end, _ = strconv.ParseInt(newRangeParts[0], 10, 64)
+					} else {
+						end, _ = strconv.ParseInt(rangeParts[1], 10, 64)
+					}
+
 				}
 			}
 		} else {
@@ -66,6 +73,7 @@ func UploadChunkHandlerClosure(rdb *redis.Client) http.HandlerFunc {
 
 		// check if the range is valid
 		if start != fileMetaData.LastByteReceived+1 {
+			println("expected", fileMetaData.LastByteReceived+1, "got", start)
 			http.Error(writer, "Invalid chunk range", http.StatusBadRequest)
 			return
 		}
@@ -103,6 +111,7 @@ func UploadChunkHandlerClosure(rdb *redis.Client) http.HandlerFunc {
 			http.Error(writer, "Unable to update file metadata", http.StatusInternalServerError)
 			return
 		}
+
 		fmt.Println("LastByteReceived updated to ", fileMetaData.LastByteReceived)
 		fmt.Println("Size of the file is ", fileMetaData.Size)
 		// write the chunk data to the file

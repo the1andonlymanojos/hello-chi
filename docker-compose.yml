@@ -1,0 +1,14 @@
+services:
+  hello-chi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - TEMP_DIR=/mnt/tmp
+      - STOR_DIR=/mnt/storage
+    volumes:
+      - /Users/manojos/Projects/Go/hello-chi/volume:/mnt/tmp
+      - /Users/manojos/Projects/Go/hello-chi/volume:/mnt/storage

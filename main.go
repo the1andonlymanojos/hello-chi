@@ -11,6 +11,7 @@ import (
 	"hello-chi/utils"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -29,8 +30,9 @@ func main() {
 	r.Get("/download/{identifier}", handlers.DownloadHandlerClosure(rdb))
 	r.Post("/upload/internal", handlers.UploadFileInternalClosure(rdb))
 	r.Get("/swagger/*", httpSwagger.WrapHandler)
-	log.Println("Starting server on :3000")
-	err := http.ListenAndServe(":3000", r)
+	log.Println("Starting server on :" + os.Getenv("PORT") + "..................")
+	port := os.Getenv("PORT")
+	err := http.ListenAndServe(":"+port, r)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 		return
