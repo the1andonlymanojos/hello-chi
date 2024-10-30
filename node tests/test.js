@@ -151,11 +151,12 @@ async function testResizeAndWatermark(etags) {
    //  await splitPDf(id)
    //  //testCompression(['ebbbc421-9a1c-4080-9ede-5e5578519112','2f03c8bd-1cdf-412f-8cdb-53ee1995516b','8a634787-575c-4ee6-91bd-01fb782077cb'])
     mergePDF([
-            'a2217bb9-a761-45e3-9569-9e677b1c0700',
-            '7c437654-618b-4a80-bd6e-fd821165aa5c',
-            '10e936e8-5de0-449f-ae04-42cc42bc58a8',
-            '3df0911f-e493-46de-aa28-e89b79d90133'
+            '414f2304-9faf-49dd-8279-3d27b9b199e3',
+            'f4ce5139-2423-4b9f-a3bc-11ad74461944',
+            'a3745103-257e-4d57-bcc0-831aee5ba29c',
+            'e25fcccc-391e-4b5c-8cb2-210d3bf7ff3f'
         ]
+
 
     )
    // testResizeAndWatermark([id ,"099ae98a-2abd-42dd-945c-ecd3e2d83f0b"])
