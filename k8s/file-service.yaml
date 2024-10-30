@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: file-service
+spec:
+  replicas: 1  # Number of pods you want to run
+  selector:
+    matchLabels:
+      app: file-service
+  template:
+    metadata:
+      labels:
+        app: file-service
+    spec:
+      containers:
+        - name: file-service
+          image: manojthedonut/file-service:0.2  # Your Docker image
+          ports:
+            - containerPort: 3000  # Port your app listens on
+          env:
+            - name: REDIS_HOST
+              value: "redis-service:6379"  # Use the actual service name for Redis
+            - name: REDIS_PASSWORD
+              value: ""  # Set this if you're using a password, otherwise omit it
+            - name: PORT
+              value: "3000"  # Port variable
+            - name: TEMP_DIR
+              value: "/mnt/volume/tmp"  # Temp directory
+            - name: STOR_DIR
+              value: "/mnt/volume/storage"  # Storage directory
+          volumeMounts:
+            - name: storage-volume
+              mountPath: /mnt/volume  # Path in the container where the PVC is mounted
+      volumes:
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: pvc1  # Name of your PVC

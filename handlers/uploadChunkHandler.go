@@ -125,13 +125,13 @@ func UploadChunkHandlerClosure(rdb *redis.Client) http.HandlerFunc {
 		if fileMetaData.LastByteReceived == fileMetaData.Size-1 {
 			// file extension
 			ext := filepath.Ext(fileMetaData.Name)
-			finalFilePath, err := utils.ConcatenateChunks(identifier, fileMetaData.Size, ext)
+			finalFilePathWrtToUploadDir, err := utils.ConcatenateChunks(identifier, fileMetaData.Size, ext)
 			if err != nil {
 				fmt.Println(err)
 				http.Error(writer, "Unable to concatenate chunks ", http.StatusInternalServerError)
 				return
 			}
-			fileMetaData.Path = finalFilePath
+			fileMetaData.Path = finalFilePathWrtToUploadDir
 			err = utils.StoreFileMetadata(rdb, identifier, fileMetaData)
 
 		} else {

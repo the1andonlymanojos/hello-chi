@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: pdf-conv
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pdf-conv
+  template:
+    metadata:
+        labels:
+          app: pdf-conv
+    spec:
+      containers:
+        - name: pdf-conv
+          image: manojthedonut/pdf-conversion-service:0.101
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: REDIS_HOST
+              value: "redis-service"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              value: ""
+            - name: PORT
+              value: "3000"
+            - name: STORAGE
+              value: "/mnt/volume/storage"
+            - name: FILE_MICROSERVICE
+              value: "http://file-service:3000"
+          volumeMounts:
+            - name: storage-volume
+              mountPath: /mnt/volume
+      volumes:
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: pvc1
+

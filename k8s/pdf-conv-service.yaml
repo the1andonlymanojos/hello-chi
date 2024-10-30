@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pdf-conv-service
+  annotations:
+    cloud.google.com/network-tier: Standard  # Set network tier to Standard
+spec:
+    selector:
+        app: pdf-conv
+    type: ClusterIP
+    ports:
+        - port: 8080
+          targetPort: 8080
+
+

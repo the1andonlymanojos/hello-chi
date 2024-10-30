@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: file-service
+  annotations:
+    cloud.google.com/network-tier: Standard  # Set network tier to Standard
+spec:
+  selector:
+    app: file-service
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000

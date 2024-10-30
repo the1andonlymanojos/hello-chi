@@ -30,6 +30,7 @@ func ConcatenateChunks(identifier string, totalSize int64, fileExtension string)
 
 	// Create the final file
 	finalFilePath := fmt.Sprintf("%s/%s%s", uploadDir, identifier, fileExtension)
+	finalFilePathWrtToUploadDir := fmt.Sprintf("%s%s", identifier, fileExtension)
 	errr := os.MkdirAll(uploadDir, os.ModePerm)
 	if errr != nil {
 		return "", fmt.Errorf("unable to create upload directory: %w", errr)
@@ -81,7 +82,7 @@ func ConcatenateChunks(identifier string, totalSize int64, fileExtension string)
 		}
 	}
 
-	return finalFilePath, nil
+	return finalFilePathWrtToUploadDir, nil
 }
 
 func getStartByteFromFilename(filename string) int64 {

@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// DownloadHandlerClosure handles file downloads, supporting range requests.
+// DownloadAsZipHandlerClosure handles file downloads, supporting range requests.
 //
 //	@Summary		Download file
 //	@Description	Downloads a file with a valid identifier. The eTag is used to retrieve the file Metadata from the Redis database. As long as the ownerId matches that in the cookie, the file is served.
@@ -23,13 +23,13 @@ import (
 //	@Failure		400			{string}	string	"Bad request or invalid identifier"
 //	@Failure		500			{string}	string	"Bad request or invalid identifier"
 //	@Router			/download/{identifier} [get]
-func DownloadHandlerClosure(rdb *redis.Client) http.HandlerFunc {
+func DownloadAsZipHandlerClosure(rdb *redis.Client) http.HandlerFunc {
 
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// hardcoded file path for testing purposes
+
 		uploadDir := os.Getenv("STOR_DIR")
 		eTag := chi.URLParam(request, "identifier")
-		fmt.Println("eTag: ", eTag)
 
 		// check if the identifier exists in redis
 		fileMetaData, err := utils.GetFileMetadata(rdb, eTag)
@@ -38,21 +38,17 @@ func DownloadHandlerClosure(rdb *redis.Client) http.HandlerFunc {
 			http.Error(writer, errorMsg, http.StatusBadRequest)
 			return
 		}
-		fmt.Println("fileMetaData: ", fileMetaData)
 
 		if fileMetaData.Path == "" || fileMetaData.Size == 0 {
 			http.Error(writer, "Invalid identifier or link expired", http.StatusBadRequest)
 			return
 		}
-		fmt.Println(uploadDir + "/" + fileMetaData.Path)
-		file, err := os.Open(uploadDir + "/" + fileMetaData.Path)
-		fmt.Println("file: ", file)
 
+		file, err := os.Open(uploadDir + "/" + fileMetaData.Path)
 		if err != nil {
 			http.Error(writer, "Unable to open file for reading", http.StatusInternalServerError)
 			return
 		}
-		fmt.Println("file: ", file)
 		defer file.Close()
 
 		fileName := fileMetaData.Name

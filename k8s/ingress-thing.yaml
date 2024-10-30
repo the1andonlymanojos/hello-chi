@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx  # Specify to use nginx-ingress
+spec:
+  rules:
+    - host: file-service.manojshivagange.tech  # Subdomain for file-service
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: file-service
+                port:
+                  number: 3000
+    - host: pdf-service.manojshivagange.tech  # Subdomain for another service
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: pdf-conv-service
+                port:
+                  number: 8080

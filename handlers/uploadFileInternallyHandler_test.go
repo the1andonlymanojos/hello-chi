@@ -49,7 +49,7 @@ func TestUploadFileInternal(t *testing.T) {
 		Name:  "rando.png",
 		Owner: "sameOwner",
 		UUID:  randUUID,
-		Path:  fmt.Sprintf("%s/%s.png", uploadDir, randUUID),
+		Path:  fmt.Sprintf("%s.png", randUUID),
 	}
 
 	// Create a new HTTP request for the /upload/initiate endpoint

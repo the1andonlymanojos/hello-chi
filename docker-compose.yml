@@ -6,9 +6,9 @@ services:
     ports:
       - "3000:3000"
     environment:
+      - REDIS_HOST=localhost:6379
       - PORT=3000
-      - TEMP_DIR=/mnt/tmp
-      - STOR_DIR=/mnt/storage
+      - TEMP_DIR=/mnt/volume/tmp
+      - STOR_DIR=/mnt/volume/storage
     volumes:
-      - /Users/manojos/Projects/Go/hello-chi/volume:/mnt/tmp
-      - /Users/manojos/Projects/Go/hello-chi/volume:/mnt/storage
+      - /Users/manojos/Projects/Go/hello-chi/volume:/mnt/volume
