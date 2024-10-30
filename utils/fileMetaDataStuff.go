@@ -44,7 +44,7 @@ func StoreFileMetadata(rdb *redis.Client, etag string, metadata FileMetaData) er
 	if err != nil {
 		return err
 	}
-	err = rdb.Set(ctx, etag, metadataJSON, time.Duration(metadata.TTL)*time.Second).Err()
+	err = rdb.Set(ctx, etag, metadataJSON, time.Duration(7200)*time.Second).Err()
 	if err != nil {
 		return err
 	}

@@ -43,7 +43,7 @@ func UploadFileInternalClosure(rdb *redis.Client) http.HandlerFunc {
 			UploadDate:       time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
 			Path:             uploadReq.Path,
 			Owner:            uploadReq.Owner,
-			TTL:              999,
+			TTL:              7200,
 			HASH:             uploadReq.HASH,
 			LastByteReceived: uploadReq.Size,
 			Name:             uploadReq.Name,
