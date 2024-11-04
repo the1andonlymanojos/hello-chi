@@ -3,7 +3,7 @@ name: build_n_deploy
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build-and-deploy:
