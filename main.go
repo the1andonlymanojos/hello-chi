@@ -37,6 +37,7 @@ func main() {
 	r.Put("/upload/{identifier}", handlers.UploadChunkHandlerClosure(rdb))
 	r.Get("/download/{identifier}", handlers.DownloadHandlerClosure(rdb))
 	r.Post("/upload/internal", handlers.UploadFileInternalClosure(rdb))
+	r.Post("/zip", handlers.DownloadAsZipHandlerClosure(rdb))
 	r.Get("/swagger/*", httpSwagger.WrapHandler)
 	log.Println("Starting server on :" + os.Getenv("PORT") + "..................")
 	port := os.Getenv("PORT")

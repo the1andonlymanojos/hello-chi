@@ -1,16 +1,18 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"hello-chi/utils"
-	"io"
 	"net/http"
 	"os"
-	"strconv"
-	"strings"
 )
+
+type DownloadRequest struct {
+	Etags []string `json:"etags"`
+}
 
 // DownloadAsZipHandlerClosure handles file downloads, supporting range requests.
 //
@@ -29,92 +31,64 @@ func DownloadAsZipHandlerClosure(rdb *redis.Client) http.HandlerFunc {
 		// hardcoded file path for testing purposes
 
 		uploadDir := os.Getenv("STOR_DIR")
-		eTag := chi.URLParam(request, "identifier")
+		var downloadRequest DownloadRequest
+		err := json.NewDecoder(request.Body).Decode(&downloadRequest)
 
-		// check if the identifier exists in redis
-		fileMetaData, err := utils.GetFileMetadata(rdb, eTag)
 		if err != nil {
-			errorMsg := fmt.Sprintf("Invalid identifier or link expired: %s\n eTag= %s", err.Error(), eTag)
-			http.Error(writer, errorMsg, http.StatusBadRequest)
+			fmt.Println("Error decoding download request:", err)
+			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		if fileMetaData.Path == "" || fileMetaData.Size == 0 {
-			http.Error(writer, "Invalid identifier or link expired", http.StatusBadRequest)
-			return
+		var owner string
+
+		filePaths := make([]string, 0)
+		for _, eTag := range downloadRequest.Etags {
+			fileMetaData, err := utils.GetFileMetadata(rdb, eTag)
+			if err != nil {
+				errorMsg := fmt.Sprintf("Invalid identifier or link expired: %s\n eTag= %s", err.Error(), eTag)
+				http.Error(writer, errorMsg, http.StatusBadRequest)
+				return
+			}
+
+			if fileMetaData.Path == "" || fileMetaData.Size == 0 {
+				http.Error(writer, "Invalid identifier or link expired", http.StatusBadRequest)
+				return
+			}
+			owner = fileMetaData.Owner
+			filePaths = append(filePaths, uploadDir+"/"+fileMetaData.Path)
 		}
 
-		file, err := os.Open(uploadDir + "/" + fileMetaData.Path)
+		newFileEtag := uuid.New().String()
+		pathToZippedFile := uploadDir + "/" + newFileEtag + ".zip"
+
+		fileSize, err := utils.ZipFiles(filePaths, pathToZippedFile)
 		if err != nil {
-			http.Error(writer, "Unable to open file for reading", http.StatusInternalServerError)
+			fmt.Println(err)
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer file.Close()
 
-		fileName := fileMetaData.Name
+		err = utils.StoreFileMetadata(rdb, newFileEtag, utils.FileMetaData{
+			Size:             fileSize,
+			UploadDate:       "2021-01-01",
+			Path:             pathToZippedFile,
+			Owner:            owner,
+			TTL:              7200,
+			HASH:             "CalcHashLater",
+			LastByteReceived: fileSize - 1,
+			Name:             "zippedFiles.zip",
+		})
 
-		fileInfo, err := file.Stat()
 		if err != nil {
-			http.Error(writer, "Unable to retrieve file info", http.StatusInternalServerError)
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		fileSize := fileInfo.Size()
 
-		rangeHeader := request.Header.Get("Range")
-		if rangeHeader != "" {
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+		json.NewEncoder(writer).Encode(map[string]string{"eTag": newFileEtag})
 
-			rangeHeader = strings.TrimPrefix(rangeHeader, "bytes=")
-			rangeParts := strings.Split(rangeHeader, "-")
-
-			start, err := strconv.ParseInt(rangeParts[0], 10, 64)
-			if err != nil {
-				http.Error(writer, "Invalid Range header", http.StatusBadRequest)
-				return
-			}
-
-			var end int64
-			if len(rangeParts) == 2 && rangeParts[1] != "" {
-				end, err = strconv.ParseInt(rangeParts[1], 10, 64)
-				if err != nil {
-					http.Error(writer, "Invalid Range header", http.StatusBadRequest)
-					return
-				}
-			} else {
-				end = fileSize - 1
-			}
-
-			if start >= fileSize || end >= fileSize || start > end {
-				http.Error(writer, "Requested range not satisfiable", http.StatusRequestedRangeNotSatisfiable)
-				return
-			}
-
-			writer.Header().Set("Content-Type", "application/octet-stream")
-			writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileMetaData.Name))
-			writer.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fileSize))
-			writer.Header().Set("Content-Length", strconv.FormatInt(end-start+1, 10))
-			writer.WriteHeader(http.StatusPartialContent)
-
-			_, err = file.Seek(start, io.SeekStart)
-			if err != nil {
-				http.Error(writer, "Unable to seek to requested range", http.StatusInternalServerError)
-				return
-			}
-
-			_, err = io.CopyN(writer, file, end-start+1)
-			if err != nil && err != io.EOF {
-				http.Error(writer, "Error streaming file", http.StatusInternalServerError)
-				return
-			}
-		} else {
-			writer.Header().Set("Content-Type", "application/octet-stream")
-			writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
-			writer.Header().Set("Content-Length", strconv.FormatInt(fileSize, 10))
-			_, err = io.Copy(writer, file)
-			if err != nil {
-				http.Error(writer, "Unable to copy file data to response", http.StatusInternalServerError)
-				return
-			}
-		}
 	}
 
 }

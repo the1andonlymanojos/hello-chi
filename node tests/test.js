@@ -8,6 +8,7 @@ const BASE_URL = 'http://localhost:3000';
 const PDF_SERVICE_URL = 'http://localhost:8080';
 // Path to the MP3 file
 const filePath = path.resolve(__dirname, '2022IMT070.pdf');
+const filePath2 = path.resolve(__dirname, 'glimpse-of-us.mp3');
 
 // Function to initiate the file upload
 async function initiateFileUpload(filePath) {
@@ -132,7 +133,18 @@ async function mergePDF( etags ) {
 
 
 
+async function testZip(etags){
+    try{
+        const resp = await axios.post(`${BASE_URL}/zip`, {
+            etags: etags
+        });
+        console.log(resp.data);
 
+    }catch (error){
+        console.error("Error during zip operation:", error);
+    }
+
+}
 
 async function testResizeAndWatermark(etags) {
     try {
@@ -160,7 +172,17 @@ async function testResizeAndWatermark(etags) {
    //  }
    //
    //  await uploadFileChunk(id, filePath)
-    await watermarkPDF('1ade2869-8937-4c89-812f-39f4f2af7561')
+   //
+   //  const nid = await initiateFileUpload(filePath2);
+   //  if (!id) {
+   //      return;
+   //  }
+   //
+   //  await uploadFileChunk(nid, filePath2)
+
+    await testZip(['518ad310-ef4c-4aa0-8f25-88e47786e185', 'e2b9771e-0d96-4902-a7a3-f9079d1dc5b6'])
+
+    //await watermarkPDF('1ade2869-8937-4c89-812f-39f4f2af7561')
 
    //  //testCompression(['ebbbc421-9a1c-4080-9ede-5e5578519112','2f03c8bd-1cdf-412f-8cdb-53ee1995516b','8a634787-575c-4ee6-91bd-01fb782077cb'])
    //  mergePDF([
