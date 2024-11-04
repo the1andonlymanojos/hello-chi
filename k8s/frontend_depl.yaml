@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polyfile-frontend
+  labels:
+    app: polyfile-frontend
+spec:
+  replicas: 1  # You can adjust the number of replicas as needed
+  selector:
+    matchLabels:
+      app: polyfile-frontend
+  template:
+    metadata:
+      labels:
+        app: polyfile-frontend
+    spec:
+      containers:
+        - name: polyfile-frontend
+          image: manojthedonut/polyfile-frontend:0.2  # Your Docker image
+          ports:
+            - containerPort: 80  # Port your app runs on
+          env:  # Optionally, add environment variables if needed
+            - name: NODE_ENV
+              value: "production"  # Adjust based on your environment
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: polyfile-frontend
+spec:
+  type: ClusterIP  # Use NodePort if you're testing on a local cluster like Minikube
+  ports:
+    - port: 80  # Port exposed by the service
+      targetPort: 80  # Port your app is listening on inside the container
+  selector:
+    app: polyfile-frontend

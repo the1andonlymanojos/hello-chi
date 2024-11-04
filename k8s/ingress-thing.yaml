@@ -16,6 +16,16 @@ spec:
                 name: file-service
                 port:
                   number: 3000
+    - host: polyfile.manojshivagange.tech
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: polyfile-frontend
+                port:
+                  number: 80
     - host: pdf-service.manojshivagange.tech  # Subdomain for another service
       http:
         paths:

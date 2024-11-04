@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: pdf-conv
-          image: manojthedonut/pdf-conversion-service:0.101
+          image: manojthedonut/pdf-conversion-service:0.1.8
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

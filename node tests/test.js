@@ -1,17 +1,18 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-
-const BASE_URL = 'https://file-service.manojshivagange.tech';
-const PDF_SERVICE_URL = 'https://pdf-service.manojshivagange.tech';
-// const BASE_URL = 'http://localhost:3000';
-// const PDF_SERVICE_URL = 'http://localhost:8080';
+//
+// const BASE_URL = 'https://file-service.manojshivagange.tech';
+// const PDF_SERVICE_URL = 'https://pdf-service.manojshivagange.tech';
+const BASE_URL = 'http://localhost:3000';
+const PDF_SERVICE_URL = 'http://localhost:8080';
 // Path to the MP3 file
 const filePath = path.resolve(__dirname, '2022IMT070.pdf');
 
 // Function to initiate the file upload
 async function initiateFileUpload(filePath) {
     const fileStat = fs.statSync(filePath);
+
     const uploadRequest = {
         hash: '12345abcde', // You may calculate a real hash here if needed
         name: path.basename(filePath),
@@ -110,6 +111,17 @@ async function splitPDf( etag ) {
     console.log(resp.data)
 }
 
+async function watermarkPDF( etag ) {
+    const resp = await axios.post(`${PDF_SERVICE_URL}/add-watermark`, {
+        etags: [etag],
+        watermarkText: "sample test",
+        opacity: 50,
+        position: "center",
+    });
+
+    console.log(resp.data)
+}
+
 async function mergePDF( etags ) {
     resp  = await axios.post(`${PDF_SERVICE_URL}/convert-images-to-pdf`, {
         etags: etags
@@ -148,17 +160,16 @@ async function testResizeAndWatermark(etags) {
    //  }
    //
    //  await uploadFileChunk(id, filePath)
-   //  await splitPDf(id)
+    await watermarkPDF('1ade2869-8937-4c89-812f-39f4f2af7561')
+
    //  //testCompression(['ebbbc421-9a1c-4080-9ede-5e5578519112','2f03c8bd-1cdf-412f-8cdb-53ee1995516b','8a634787-575c-4ee6-91bd-01fb782077cb'])
-    mergePDF([
-            '414f2304-9faf-49dd-8279-3d27b9b199e3',
-            'f4ce5139-2423-4b9f-a3bc-11ad74461944',
-            'a3745103-257e-4d57-bcc0-831aee5ba29c',
-            'e25fcccc-391e-4b5c-8cb2-210d3bf7ff3f'
-        ]
-
-
-    )
+   //  mergePDF([
+   //          '414f2304-9faf-49dd-8279-3d27b9b199e3',
+   //          'f4ce5139-2423-4b9f-a3bc-11ad74461944',
+   //          'a3745103-257e-4d57-bcc0-831aee5ba29c',
+   //          'e25fcccc-391e-4b5c-8cb2-210d3bf7ff3f'
+   //      ]
+    //  )
    // testResizeAndWatermark([id ,"099ae98a-2abd-42dd-945c-ecd3e2d83f0b"])
     //downloadFile(id);
 })();

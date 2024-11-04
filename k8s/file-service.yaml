@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: file-service
-          image: manojthedonut/file-service:0.2.1  # Your Docker image
+          image: manojthedonut/file-service:0.2.3  # Your Docker image
           ports:
             - containerPort: 3000  # Port your app listens on
           env:
