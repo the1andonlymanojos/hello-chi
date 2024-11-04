@@ -31,7 +31,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          tags: manojthedonut/file-service:$version
+          tags: manojthedonut/file-service:latest
           push: true
 
       # - name: Deploy to Kubernetes
